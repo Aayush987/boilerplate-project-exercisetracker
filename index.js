@@ -26,67 +26,31 @@ app.post('/api/users',async (req,res) => {
   res.json({username: user.username, _id: user._id});
 })
 
-// app.post('/api/users/:_id/exercises',async (req,res) => {
-//   const {_id} = req.params;
-//   const {description, duration} = req.body;
-//   var {date} = req.body;
-//   if (date === "" || "undefined"){
-//     date = new Date().toDateString()
-//   } else {
-//     date = new Date(date).toDateString()
-//   } 
-
-//   const obj = {
-//     description,
-//     duration,
-//     date
-//   }
-
-//   const user = await User.findById(_id);
-//   console.log(user);
-//   // update the user
-//   user.log.push(obj);
-//   await user.save();
-//   res.json({_id: user._id,username: user.username, date: date,duration, description});
-// })
-
-app.post("/api/users/:_id/exercises",(req,res,next)=>{
-  let userId = req.params._id
-  let description = req.body.description
-  let duration = req.body.duration
-  let date = req.body.date
-  
+app.post('/api/users/:_id/exercises',async (req,res) => {
+  const {_id} = req.params;
+  const {description, duration} = req.body;
+  var {date} = req.body;
   if (date === "" || "undefined"){
     date = new Date().toDateString()
   } else {
     date = new Date(date).toDateString()
   } 
 
-  const expObj = {
+  const obj = {
     description,
     duration,
     date
   }
 
-  User.findByIdAndUpdate(
-    userId,
-    {$push:{log:expObj}},
-    {new:true},
-    (err,updatedUser)=>{
-      if(err) {
-        return console.log('update error:',err);
-      }
-      
-      let returnObj ={
-        "_id":userId,
-        "username":updatedUser.username,
-        "date":expObj.date,
-        "duration":parseInt(expObj.duration),"description":expObj.description
-      }
-      res.json(returnObj)
-    }
-  )  
+  const user = await User.findById(_id);
+  console.log(user);
+  // update the user
+  user.log.push(obj);
+  await user.save();
+  res.json({_id: user._id,username: user.username, date: date,duration, description});
 })
+
+
 
 
 
@@ -126,73 +90,42 @@ app.get('/api/users', async (req,res) => {
 //   })
 // })
 
-// app.get('/api/users/:_id/logs', async (req, res) => {
-//   const {_id} = req.params;
-//   const {from, to, limit} = req.query;
+app.get('/api/users/:_id/logs', async (req, res) => {
+  const {_id} = req.params;
+  const {from, to, limit} = req.query;
 
-//   let user = await User.findById(_id);
-//   let log = user.log;
+  let user = await User.findById(_id);
 
-//   if (from) {
-//     const fromDate = new Date(from);
-//     log = log.filter(exercise => new Date(exercise.date) >= fromDate);
-//   }
+  let log = user.log.map((item)=>{
+    return {
+      description:item.description,
+      duration:item.duration,
+      date: new Date(item.date).toDateString()
+    }     
+  })
 
-//   if (to) {
-//     const toDate = new Date(to);
-//     log = log.filter(exercise => new Date(exercise.date) <= toDate);
-//   }
+  if (from) {
+    const fromDate = new Date(from);
+    log = log.filter(exercise => new Date(exercise.date) >= fromDate);
+  }
 
-//   if (limit) {
-//     log = log.slice(0, Number(limit));
-//   }
+  if (to) {
+    const toDate = new Date(to);
+    log = log.filter(exercise => new Date(exercise.date) <= toDate);
+  }
 
-//   res.send({
-//     username: user.username,
-//     count: log.length,
-//     _id: _id,
-//     log: log
-//   });
-// });
+  if (limit) {
+    log = log.slice(0, Number(limit));
+  }
 
-app.get('/api/users/:_id/logs',(req,res)=>{
-  const userId = req.params._id
-  const from = req.query.from;
-  const to = req.query.to;
-  const limit = +req.query.limit;
+  res.send({
+    username: user.username,
+    count: log.length,
+    _id: _id,
+    log: log
+  });
+});
 
-  User.findById({_id:userId},(err,user)=>{
-    if(err) return console.log(err)     
-
-    let log = user.log.map((item)=>{
-      return {
-        description:item.description,
-        duration:item.duration,
-        date: new Date(item.date).toDateString()
-      }     
-    })
-    if (from){
-      const fromDate = new Date(from)
-      log = log.filter(exe => new Date(exe.date)>= fromDate)
-    }
-    if (to){
-      const toDate = new Date(to)
-      log = log.filter(exe => new Date(exe.date)<= toDate)
-    }
-    if(limit){
-      log = log.slice(0,limit)
-    }
-
-    let count = log.length  
- 
-    res.send({      
-      "username":user.username,
-      "count":count,
-      "_id":userId,
-      "log":log
-    })
-  })  
-})
 
 
 
