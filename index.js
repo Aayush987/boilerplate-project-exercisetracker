@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 require('dotenv').config()
 const User = require('./models/User.js');
 const bodyParser = require('body-parser');
+const e = require('express');
 
 mongoose.connect(process.env.MONGO_URI);
 const db = mongoose.connection;
@@ -30,26 +31,25 @@ app.post('/api/users/:_id/exercises',async (req,res) => {
   const {_id} = req.params;
   const {description, duration} = req.body;
   var {date} = req.body;
-  if (date === "" || "undefined"){
-    date = new Date().toDateString()
-  } else {
-    date = new Date(date).toDateString()
-  } 
   
-  var duration1 = parseInt(duration);
-
-  const obj = {
+  const user = await User.findById(_id);
+  const exercise = {
     description,
-    duration,
-    date
+    duration: parseInt(duration),
+    date: date ? (new Date(date)).toDateString() : (new Date()).toDateString(),
   }
 
-  const user = await User.findById(_id);
   console.log(user);
   // update the user
-  user.log.push(obj);
+  user.log.push(exercise);
   await user.save();
-  res.json({_id: user._id,username: user.username, date: date,duration: duration1, description: description});
+  res.json({
+    username: user.username,
+    description: exercise.description,
+    duration: exercise.duration,
+    _id: _id,
+    date: new Date(exercise.date).toDateString(),
+  });
 })
 
 
@@ -94,37 +94,37 @@ app.get('/api/users', async (req,res) => {
 
 app.get('/api/users/:_id/logs', async (req, res) => {
   const {_id} = req.params;
-  let from = req.query.from !== undefined ? new Date(req.query.from) : null
-  let to = req.query.to !== undefined ? new Date(req.query.to) : null
-  let limit = parseInt(req.query.limit)
+  const {from, to, limit} = req.query;
 
   let user = await User.findById(_id);
 
-  let log = user.log.map((item)=>{
-    return {
-      description:item.description,
-      duration:item.duration,
-      date: new Date(item.date).toDateString()
-    }     
-  })
+  let log = user.log;
 
 
-  if (from !== null) {
-    log = log.filter(item => new Date(item.date) >= from)
+  if (from) {
+    log = log.filter((exercise) => new Date(exercise.date) > new Date(from));
   }
-  if (to !== null) {
-    log = log.filter(item => new Date(item.date) <= to)
+
+  if (to) {
+    log = log.filter((exercise) => new Date(exercise.date) < new Date(to));
   }
+
   if (limit) {
-    log = log.slice(0, limit)
+    log = log.slice(0, limit);
   }
 
 
-  res.send({
+  res.json({
+    _id: user._id,
     username: user.username,
-    count: log.length,
-    _id: _id,
-    log: log  
+    count: user.count,
+    log: log.map((exercise) => {
+      return {
+        description: exercise.description,
+        duration: exercise.duration,
+        date: (new Date(exercise.date)).toDateString()
+      }
+    }),
   });
 });
 
