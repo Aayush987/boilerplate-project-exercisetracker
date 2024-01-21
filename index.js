@@ -41,7 +41,7 @@ app.post('/api/users/:_id/exercises',async (req,res) => {
   // update the user
   user.log.push({description: description, duration: duration, date: date});
   await user.save();
-  res.json({username: user.username,description, duration, date: date, _id: user._id});
+  res.json({_id: user._id,username: user.username, date: date,duration, description});
 })
 
 app.get('/api/users', async (req,res) => {
@@ -75,7 +75,7 @@ app.get('/api/users/:_id/logs', async (req,res) => {
     "username":user.username,
     "count":count,
     "_id":_id,
-    "log":user.log
+    "log":log
   })
 })
 
