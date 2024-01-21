@@ -100,6 +100,8 @@ app.get('/api/users/:_id/logs', async (req, res) => {
 
   let log = user.log;
 
+  let count = log.length;
+
 
   if (from) {
     log = log.filter((exercise) => new Date(exercise.date) > new Date(from));
@@ -117,7 +119,7 @@ app.get('/api/users/:_id/logs', async (req, res) => {
   res.json({
     _id: user._id,
     username: user.username,
-    count: user.count,
+    count: count,
     log: log.map((exercise) => {
       return {
         description: exercise.description,
