@@ -36,10 +36,16 @@ app.post('/api/users/:_id/exercises',async (req,res) => {
     date = new Date(date).toDateString()
   } 
 
+  const obj = {
+    description,
+    duration,
+    date
+  }
+
   const user = await User.findById(_id);
   console.log(user);
   // update the user
-  user.log.push({description: description, duration: duration, date: date});
+  user.log.push(obj);
   await user.save();
   res.json({_id: user._id,username: user.username, date: date,duration, description});
 })
@@ -50,34 +56,63 @@ app.get('/api/users', async (req,res) => {
   res.json(users);
 })
 
-app.get('/api/users/:_id/logs', async (req,res) => {
+// app.get('/api/users/:_id/logs', async (req,res) => {
+//   const {_id} = req.params;
+//   const from = req.query.from;
+//   const to = req.query.to;
+//   const limit = +req.query.limit;
+//   const user = await User.findById(_id);
+//   var log = user.log;
+//   if (from){
+//     const fromDate = new Date(from)
+//     log = log.filter(exe => new Date(exe.date)>= fromDate)
+//   }
+//   if (to){
+//     const toDate = new Date(to)
+//     log = log.filter(exe => new Date(exe.date)<= toDate)
+//   }
+//   if(limit){
+//     log = log.slice(0,limit)
+//   }
+//   console.log(user);
+//   count = user.log.length;
+//   // get the logs
+//   res.send({      
+//     "username":user.username,
+//     "count":count,
+//     "_id":_id,
+//     "log":log
+//   })
+// })
+
+app.get('/api/users/:_id/logs', async (req, res) => {
   const {_id} = req.params;
-  const from = req.query.from;
-  const to = req.query.to;
-  const limit = +req.query.limit;
-  const user = await User.findById(_id);
-  var log = user.log;
-  if (from){
-    const fromDate = new Date(from)
-    log = log.filter(exe => new Date(exe.date)>= fromDate)
+  const {from, to, limit} = req.query;
+
+  let user = await User.findById(_id);
+  let log = user.log;
+
+  if (from) {
+    const fromDate = new Date(from);
+    log = log.filter(exercise => new Date(exercise.date) >= fromDate);
   }
-  if (to){
-    const toDate = new Date(to)
-    log = log.filter(exe => new Date(exe.date)<= toDate)
+
+  if (to) {
+    const toDate = new Date(to);
+    log = log.filter(exercise => new Date(exercise.date) <= toDate);
   }
-  if(limit){
-    log = log.slice(0,limit)
+
+  if (limit) {
+    log = log.slice(0, Number(limit));
   }
-  console.log(user);
-  count = user.log.length;
-  // get the logs
-  res.send({      
-    "username":user.username,
-    "count":count,
-    "_id":_id,
-    "log":log
-  })
-})
+
+  res.send({
+    username: user.username,
+    count: log.length,
+    _id: _id,
+    log: log
+  });
+});
 
 
 
