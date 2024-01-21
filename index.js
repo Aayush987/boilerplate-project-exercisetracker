@@ -30,17 +30,18 @@ app.post('/api/users/:_id/exercises',async (req,res) => {
   const {_id} = req.params;
   const {description, duration} = req.body;
   var {date} = req.body;
-  if(!date) {
-    date = new Date().toDateString();
-  }
-  var Date1 = new Date(date).toDateString();
+  if (date === "" || "undefined"){
+    date = new Date().toDateString()
+  } else {
+    date = new Date(date).toDateString()
+  } 
 
   const user = await User.findById(_id);
   console.log(user);
   // update the user
   user.log.push({description: description, duration: duration, date: date});
   await user.save();
-  res.json({username: user.username,description, duration, date: Date1, _id: user._id});
+  res.json({username: user.username,description, duration, date: date, _id: user._id});
 })
 
 app.get('/api/users', async (req,res) => {
@@ -51,19 +52,35 @@ app.get('/api/users', async (req,res) => {
 
 app.get('/api/users/:_id/logs', async (req,res) => {
   const {_id} = req.params;
-  const {from, to, limit} = req.query;
+  const from = req.query.from;
+  const to = req.query.to;
+  const limit = +req.query.limit;
   const user = await User.findById(_id);
+  var log = user.log;
+  if (from){
+    const fromDate = new Date(from)
+    log = log.filter(exe => new Date(exe.date)>= fromDate)
+  }
+  if (to){
+    const toDate = new Date(to)
+    log = log.filter(exe => new Date(exe.date)<= toDate)
+  }
+  if(limit){
+    log = log.slice(0,limit)
+  }
   console.log(user);
   count = user.log.length;
   // get the logs
-  res.json(user);
+  res.send({      
+    "username":user.username,
+    "count":count,
+    "_id":_id,
+    "log":user.log
+  })
 })
 
 
 
-
-
-
-const listener = app.listen(3000, () => {
-  console.log('Your app is listening on port ' + listener.address().port)
+app.listen(3000, () => {  
+  console.log('Your app is listening on port ' + 3000)
 })
