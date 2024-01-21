@@ -108,12 +108,23 @@ app.get('/api/users/:_id/logs', async (req, res) => {
     }     
   })
 
+
+  if (from !== null) {
+    log = log.filter(item => new Date(item.date) >= from)
+  }
+  if (to !== null) {
+    log = log.filter(item => new Date(item.date) <= to)
+  }
+  if (limit) {
+    log = log.slice(0, limit)
+  }
+
+
   res.send({
     username: user.username,
     count: log.length,
     _id: _id,
-    log: log.filter((e) => e.date >= from && e.date <= to)
-    .slice(0, limit || count)
+    log: log  
   });
 });
 
