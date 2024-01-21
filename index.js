@@ -49,7 +49,7 @@ app.post('/api/users/:_id/exercises',async (req,res) => {
   // update the user
   user.log.push(obj);
   await user.save();
-  res.json({_id: user._id,username: user.username, date: date,duration: duration1, description});
+  res.json({_id: user._id,username: user.username, date: date,duration: duration1, description: description});
 })
 
 
@@ -94,7 +94,9 @@ app.get('/api/users', async (req,res) => {
 
 app.get('/api/users/:_id/logs', async (req, res) => {
   const {_id} = req.params;
-  const {from, to, limit} = req.query;
+  let from = req.query.from !== undefined ? new Date(req.query.from) : null
+  let to = req.query.to !== undefined ? new Date(req.query.to) : null
+  let limit = parseInt(req.query.limit)
 
   let user = await User.findById(_id);
 
@@ -106,25 +108,12 @@ app.get('/api/users/:_id/logs', async (req, res) => {
     }     
   })
 
-  if (from) {
-    const fromDate = new Date(from);
-    log = log.filter(exercise => new Date(exercise.date) >= fromDate);
-  }
-
-  if (to) {
-    const toDate = new Date(to);
-    log = log.filter(exercise => new Date(exercise.date) <= toDate);
-  }
-
-  if (limit) {
-    log = log.slice(0, Number(limit));
-  }
-
   res.send({
     username: user.username,
     count: log.length,
     _id: _id,
-    log: log
+    log: log.filter((e) => e.date >= from && e.date <= to)
+    .slice(0, limit || count)
   });
 });
 
