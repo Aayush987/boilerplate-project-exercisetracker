@@ -53,9 +53,10 @@ app.get('/api/users/:_id/logs', async (req,res) => {
   const {_id} = req.params;
   const {from, to, limit} = req.query;
   const user = await User.findById(_id);
+  console.log(user);
   count = user.log.length;
   // get the logs
-  res.json({user,count: count});
+  res.json(user);
 })
 
 
