@@ -35,6 +35,8 @@ app.post('/api/users/:_id/exercises',async (req,res) => {
   } else {
     date = new Date(date).toDateString()
   } 
+  
+  var duration1 = parseInt(duration);
 
   const obj = {
     description,
@@ -47,7 +49,7 @@ app.post('/api/users/:_id/exercises',async (req,res) => {
   // update the user
   user.log.push(obj);
   await user.save();
-  res.json({_id: user._id,username: user.username, date: date,duration, description});
+  res.json({_id: user._id,username: user.username, date: date,duration: duration1, description});
 })
 
 
