@@ -7,11 +7,13 @@
 		"start": "node index.js"
 	},
 	"dependencies": {
+		"axios": "^1.6.5",
 		"cors": "^2.8.5",
 		"dotenv": "^8.2.0",
 		"express": "^4.16.4",
 		"mongodb": "^6.3.0",
-		"mongoose": "^8.1.0"
+		"mongoose": "^8.1.0",
+		"node-cron": "^3.0.3"
 	},
 	"repository": {
 		"url": "https://github.com/freeCodeCamp/boilerplate-project-exercisetracker"

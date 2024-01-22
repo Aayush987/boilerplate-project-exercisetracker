@@ -6,11 +6,23 @@ require('dotenv').config()
 const User = require('./models/User.js');
 const bodyParser = require('body-parser');
 const e = require('express');
+var cron = require('node-cron');
+var axios = require('axios');
 
 mongoose.connect(process.env.MONGO_URI);
 const db = mongoose.connection;
 db.on('error',(error) => console.error(error));
 db.once('open',() => console.log('Connected to Database'));
+
+cron.schedule('*/10 * * * *', () => {
+  axios.get('https://exercise-tracker-qmh1.onrender.com/')
+     .then(resonse => {
+       console.log('Server Pinged successfully');
+     })
+     .catch(error => {
+       console.log(error);
+     });
+})
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cors())
